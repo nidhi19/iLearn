@@ -1,0 +1,47 @@
+Week 1: Single-Machine Token Bucket Rate Limiter Library
+Objective
+Build a rate limiting library that implements the token bucket algorithm. Users should be able to check if a request is allowed based on their rate limit configuration.
+What is Token Bucket?
+A bucket holds tokens up to a maximum capacity. Tokens refill at a constant rate (e.g., 10 tokens per second). When someone requests access, they need one token. If the bucket has a token, request is allowed and the token is consumed. If empty, request is denied. Over time, tokens come back and more requests are allowed again.
+Test Cases
+Test 1: First request succeeds (bucket starts full)
+
+Bucket capacity: 10 tokens
+Refill rate: 1 token per second
+Call tryAcquire() once at time T=0
+Expected result: true
+
+Test 2: Bucket depletes after multiple requests
+
+Bucket capacity: 2 tokens
+Refill rate: 0.1 tokens per second
+Call tryAcquire() three times in quick succession at T=0
+Expected: first two return true, third returns false
+
+Test 3: Tokens refill over time
+
+Bucket capacity: 5 tokens
+Refill rate: 1 token per second
+Call tryAcquire() 5 times at T=0 — all succeed (bucket empties)
+Call tryAcquire() again at T=0 — fails (no tokens)
+Advance time to T=2 seconds
+Call tryAcquire() 2 times — both succeed (2 tokens refilled)
+Call tryAcquire() again — fails (only had 2, used 2)
+
+Test 4: Burst tolerance (quiet client suddenly fires requests)
+
+Bucket capacity: 100 tokens
+Refill rate: 10 tokens per second
+Client is quiet for 5 seconds
+At T=5 seconds, client fires 100 requests rapidly
+Expected: all 100 succeed (bucket is full)
+Request 101 fails
+
+Test 5: Multiple clients don't interfere with each other
+
+Create two separate rate limiters with same config: capacity 2, refill rate 1/sec
+Client A uses 3 tokens at T=0 — first 2 succeed, third fails
+Client B uses 3 tokens at T=0 — first 2 succeed, third fails
+Each client's bucket is independent
+
+
